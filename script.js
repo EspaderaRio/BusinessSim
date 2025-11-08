@@ -138,35 +138,39 @@
       }, 1000);
     }
 
-    function renderAvailableBusinesses() {
-      const container = document.getElementById('available-businesses');
-      container.innerHTML = '';
+function renderAvailableBusinesses(disabled = false) {
+  const container = document.getElementById('available-businesses');
+  container.innerHTML = '';
 
-      BUSINESS_TEMPLATES.forEach(template => {
-        const ownedCount = gameState.ownedBusinesses.filter(b => b.type === template.id).length;
-        const cost = Math.floor(template.baseCost * Math.pow(template.multiplier, ownedCount));
-        const revenue = Math.floor(template.baseRevenue * Math.pow(template.multiplier, ownedCount));
+  BUSINESS_TEMPLATES.forEach(template => {
+    const ownedCount = gameState.ownedBusinesses.filter(b => b.type === template.id).length;
+    const cost = Math.floor(template.baseCost * Math.pow(template.multiplier, ownedCount));
+    const revenue = Math.floor(template.baseRevenue * Math.pow(template.multiplier, ownedCount));
 
-        const div = document.createElement('div');
-        div.className = 'business-item';
-        div.innerHTML = `
-          <div class="business-header">
-            <div class="business-name">${template.name}</div>
-            <div class="business-level">Owned: ${ownedCount}</div>
-          </div>
-          <div class="business-info">
-            💵 Cost: $${formatNumber(cost)} | 📊 Revenue: $${formatNumber(revenue)}/sec
-          </div>
-          <div class="business-actions">
-            <button class="btn btn-primary" onclick="purchaseBusiness('${template.id}')" 
-              ${gameState.cash < cost ? 'disabled' : ''}>
-              Purchase
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
+    const div = document.createElement('div');
+    div.className = 'business-item';
+    const canAfford = gameState.cash >= cost;
+
+    div.innerHTML = `
+      <div class="business-header">
+        <div class="business-name">${template.name}</div>
+        <div class="business-level">Owned: ${ownedCount}</div>
+      </div>
+      <div class="business-info">
+        💵 Cost: $${formatNumber(cost)} | 📊 Revenue: $${formatNumber(revenue)}/sec
+      </div>
+      <div class="business-actions">
+        <button class="btn btn-primary buy-btn" id="buy-${template.id}" ${(!canAfford || disabled) ? 'disabled' : ''}>
+          Purchase
+        </button>
+      </div>
+    `;
+    container.appendChild(div);
+
+    document.getElementById(`buy-${template.id}`).addEventListener("click", () => purchaseBusiness(template.id));
+  });
+}
+
 
     function renderOwnedBusinesses() {
       const container = document.getElementById('owned-businesses');
@@ -209,83 +213,143 @@
     }
 
     async function purchaseBusiness(templateId) {
-      const template = BUSINESS_TEMPLATES.find(t => t.id === templateId);
-      const ownedCount = gameState.ownedBusinesses.filter(b => b.type === templateId).length;
-      const cost = Math.floor(template.baseCost * Math.pow(template.multiplier, ownedCount));
+  const template = BUSINESS_TEMPLATES.find(t => t.id === templateId);
+  const ownedCount = gameState.ownedBusinesses.filter(b => b.type === templateId).length;
+  const cost = Math.floor(template.baseCost * Math.pow(template.multiplier, ownedCount));
 
-      if (gameState.cash < cost) {
-        showToast('Not enough cash!');
-        return;
-      }
+  if (gameState.cash < cost) {
+    showToast('Not enough cash!');
+    return;
+  }
 
-      if (gameState.ownedBusinesses.length >= 999) {
-        showToast('Maximum limit of 999 businesses reached!');
-        return;
-      }
+  if (gameState.ownedBusinesses.length >= 999) {
+    showToast('Maximum limit of 999 businesses reached!');
+    return;
+  }
 
-      gameState.cash -= cost;
+  // Disable buying UI while processing
+  renderAvailableBusinesses(true);
 
-      const business = {
-        id: `${templateId}_${Date.now()}`,
-        type: templateId,
-        name: template.name,
-        level: 1,
-        revenue_per_tick: Math.floor(template.baseRevenue),
-        cost: cost,
-        upgrade_cost: Math.floor(cost * 1.5),
-        purchased_at: new Date().toISOString()
-      };
+  gameState.cash -= cost;
+  updateStats(); // optimistic update to UI
 
-      const result = await window.dataSdk.create(business);
-      if (result.isOk) {
-        showToast(`Purchased ${template.name}!`);
-        renderAvailableBusinesses();
-        updateStats();
-      } else {
-        gameState.cash += cost;
-        showToast('Failed to purchase business');
-      }
+  const business = {
+    id: `${templateId}_${Date.now()}`,
+    type: templateId,
+    name: template.name,
+    level: 1,
+    revenue_per_tick: Math.floor(template.baseRevenue),
+    cost: cost,
+    upgrade_cost: Math.floor(cost * 1.5),
+    purchased_at: new Date().toISOString()
+  };
+
+  try {
+    const result = await window.dataSdk.create(business);
+    if (result.isOk) {
+      showToast(`Purchased ${template.name}!`);
+      // dataSdk should call onDataChanged and update local ownedBusinesses
+    } else {
+      // rollback local cash
+      gameState.cash += cost;
+      showToast('Failed to purchase business');
     }
+  } catch (err) {
+    gameState.cash += cost;
+    console.error('purchaseBusiness error', err);
+    showToast('Error purchasing business');
+  } finally {
+    renderAvailableBusinesses(false);
+    renderOwnedBusinesses();
+    updateStats();
+  }
+}
+
 
     async function upgradeBusiness(businessId) {
-      const business = gameState.ownedBusinesses.find(b => b.id === businessId);
-      if (!business || gameState.cash < business.upgrade_cost) {
-        showToast('Not enough cash!');
-        return;
-      }
+  const business = gameState.ownedBusinesses.find(b => b.id === businessId);
+  if (!business) {
+    showToast('Business not found');
+    return;
+  }
 
-      gameState.cash -= business.upgrade_cost;
-      business.level += 1;
-      business.revenue_per_tick = Math.floor(business.revenue_per_tick * 1.5);
-      business.upgrade_cost = Math.floor(business.upgrade_cost * 1.5);
+  const originalUpgradeCost = business.upgrade_cost;
+  if (gameState.cash < originalUpgradeCost) {
+    showToast('Not enough cash!');
+    return;
+  }
 
-      const result = await window.dataSdk.update(business);
-      if (result.isOk) {
-        showToast(`Upgraded ${business.name} to level ${business.level}!`);
-        updateStats();
-      } else {
-        gameState.cash += business.upgrade_cost;
-        showToast('Failed to upgrade business');
-      }
+  // disable UI while upgrading
+  renderOwnedBusinesses(true);
+
+  // pay upfront (optimistic)
+  gameState.cash -= originalUpgradeCost;
+  updateStats();
+
+  // prepare updated copy to send to dataSdk
+  const updatedBusiness = Object.assign({}, business, {
+    level: business.level + 1,
+    revenue_per_tick: Math.floor(business.revenue_per_tick * 1.5),
+    upgrade_cost: Math.floor(business.upgrade_cost * 1.5)
+  });
+
+  try {
+    const result = await window.dataSdk.update(updatedBusiness);
+    if (result.isOk) {
+      showToast(`Upgraded ${business.name} to level ${updatedBusiness.level}!`);
+      // assume dataHandler.onDataChanged will update local ownedBusinesses
+    } else {
+      // rollback cash on failure
+      gameState.cash += originalUpgradeCost;
+      showToast('Failed to upgrade business');
     }
+  } catch (err) {
+    console.error('upgradeBusiness error', err);
+    gameState.cash += originalUpgradeCost;
+    showToast('Error upgrading business');
+  } finally {
+    renderAvailableBusinesses();
+    renderOwnedBusinesses();
+    updateStats();
+  }
+}
 
-    async function sellBusiness(businessId) {
-      const business = gameState.ownedBusinesses.find(b => b.id === businessId);
-      if (!business) return;
 
-      const sellPrice = Math.floor(business.cost * 0.5);
-      gameState.cash += sellPrice;
+   async function sellBusiness(businessId) {
+  const business = gameState.ownedBusinesses.find(b => b.id === businessId);
+  if (!business) return;
 
-      const result = await window.dataSdk.delete(business);
-      if (result.isOk) {
-        showToast(`Sold ${business.name} for $${formatNumber(sellPrice)}`);
-        renderAvailableBusinesses();
-        updateStats();
-      } else {
-        gameState.cash -= sellPrice;
-        showToast('Failed to sell business');
-      }
+  // calculate sell price based on original cost or current cost
+  const sellPrice = Math.floor((business.cost || 0) * 0.5);
+
+  // Optimistic UI change: add cash immediately
+  gameState.cash += sellPrice;
+  updateStats();
+
+  try {
+    // many data SDKs expect an id when deleting
+    const result = await window.dataSdk.delete({ id: business.id });
+    // if your SDK expects plain id: window.dataSdk.delete(business.id)
+    // adjust accordingly.
+    if (result.isOk) {
+      showToast(`Sold ${business.name} for $${formatNumber(sellPrice)}`);
+      // dataHandler.onDataChanged should update ownedBusinesses
+    } else {
+      // rollback
+      gameState.cash -= sellPrice;
+      showToast('Failed to sell business');
     }
+  } catch (err) {
+    console.error('sellBusiness error', err);
+    gameState.cash -= sellPrice;
+    showToast('Error selling business');
+  } finally {
+    renderAvailableBusinesses();
+    renderOwnedBusinesses();
+    updateStats();
+  }
+}
+
 
     function updateStats() {
       document.getElementById('cash').textContent = `$${formatNumber(Math.floor(gameState.cash))}`;
