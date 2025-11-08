@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mobile Business Empire</title>
-  <script src="/_sdk/data_sdk.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
   <style>
     body {
       box-sizing: border-box;
@@ -497,7 +495,81 @@
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+    <script>
+    // Paste dataSdk here
+    window.dataSdk = (function() {
+      let dataHandler = null;
+      let store = JSON.parse(localStorage.getItem('gameData')) || [];
+
+      function notify() {
+        if (dataHandler && typeof dataHandler.onDataChanged === 'function') {
+          dataHandler.onDataChanged([...store]);
+        }
+      }
+
+      return {
+        async init(handler) {
+          dataHandler = handler;
+          notify();
+          return { isOk: true };
+        },
+        async create(item) {
+          store.push(item);
+          localStorage.setItem('gameData', JSON.stringify(store));
+          notify();
+          return { isOk: true };
+        },
+        async update(item) {
+          const index = store.findIndex(b => b.id === item.id);
+          if (index !== -1) {
+            store[index] = item;
+            localStorage.setItem('gameData', JSON.stringify(store));
+            notify();
+            return { isOk: true };
+          } else {
+            return { isOk: false };
+          }
+        },
+        async delete(item) {
+          const index = store.findIndex(b => b.id === item.id);
+          if (index !== -1) {
+            store.splice(index, 1);
+            localStorage.setItem('gameData', JSON.stringify(store));
+            notify();
+            return { isOk: true };
+          } else {
+            return { isOk: false };
+          }
+        },
+        async getAll() {
+          return [...store];
+        }
+      };
+    })();
+
+    // Paste elementSdk here
+    window.elementSdk = (function() {
+      let configStore = {};
+      return {
+        async init({ defaultConfig, onConfigChange }) {
+          configStore = { ...defaultConfig };
+          if (typeof onConfigChange === 'function') {
+            onConfigChange(configStore);
+          }
+          return { isOk: true };
+        },
+        setConfig(newConfig) {
+          configStore = { ...configStore, ...newConfig };
+          if (newConfig.background_color) document.body.style.backgroundColor = newConfig.background_color;
+          if (newConfig.text_color) document.body.style.color = newConfig.text_color;
+        },
+        getConfig() {
+          return { ...configStore };
+        }
+      };
+    })();
+  </script>
+  <script src="tailwindcss.js" type="text/javascript"></script>
  </head>
  <body>
   <div class="mobile-container">
