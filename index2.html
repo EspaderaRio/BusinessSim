@@ -1,0 +1,1397 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Business Empire</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    .game-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100%;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 32px;
+      color: #1a202c;
+      font-weight: 700;
+    }
+
+    .company-name {
+      font-size: 18px;
+      color: #4299e1;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      padding: 16px;
+      border-radius: 12px;
+      color: white;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .city-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .city-tab {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .city-tab.active {
+      background: #4299e1;
+      color: white;
+      border-color: #3182ce;
+    }
+
+    .city-tab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 400px;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1400px) {
+      .content-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .side-panel {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .panel h2 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      color: #1a202c;
+      font-weight: 700;
+    }
+
+    .business-item {
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .business-item:hover {
+      border-color: #4299e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+    }
+
+    .business-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .business-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .business-level {
+      background: #4299e1;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .business-info {
+      font-size: 13px;
+      color: #4a5568;
+      margin-bottom: 12px;
+    }
+
+    .business-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .owner-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #48bb78;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .npc-owned {
+      background: #ed8936;
+    }
+
+    .partnership {
+      background: #9f7aea;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      min-width: 80px;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #4299e1;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #3182ce;
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #38a169;
+      transform: translateY(-1px);
+    }
+
+    .btn-warning {
+      background: #ed8936;
+      color: white;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: #dd6b20;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #e53e3e;
+      transform: translateY(-1px);
+    }
+
+    .event-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .event-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .event-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+
+    .event-description {
+      font-size: 16px;
+      color: #4a5568;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .event-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .choice-btn:hover {
+      border-color: #4299e1;
+      background: #ebf8ff;
+    }
+
+    .choice-title {
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .choice-effect {
+      font-size: 12px;
+      color: #4a5568;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #718096;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a202c;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+      z-index: 1000;
+      max-width: 400px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .achievement {
+      background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      animation: pulse 0.5s ease-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .npc-card {
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .npc-name {
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .npc-details {
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .partnership-info {
+      background: #faf5ff;
+      border: 1px solid #d6bcfa;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container">
+   <div class="header">
+    <h1 id="game-title">Global Business Empire</h1>
+    <div class="company-name" id="company-name">
+     Global Dynamics Corp
+    </div>
+    <div class="stats-grid">
+     <div class="stat-card">
+      <div class="stat-label">
+       💰 Cash
+      </div>
+      <div class="stat-value" id="cash">
+       $10,000
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-label">
+       📈 Income/sec
+      </div>
+      <div class="stat-value" id="income">
+       $0
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-label">
+       🏢 My Businesses
+      </div>
+      <div class="stat-value" id="my-business-count">
+       0
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-label">
+       📊 Investments
+      </div>
+      <div class="stat-value" id="investment-count">
+       0
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-label">
+       🤝 Partnerships
+      </div>
+      <div class="stat-value" id="partnership-count">
+       0
+      </div>
+     </div>
+     <div class="stat-card">
+      <div class="stat-label">
+       🌍 Cities
+      </div>
+      <div class="stat-value" id="city-count">
+       5
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="city-tabs" id="city-tabs"></div>
+   <div class="content-grid">
+    <div class="panel">
+     <h2 id="available-title">🛒 Available Businesses</h2>
+     <div id="available-businesses"></div>
+    </div>
+    <div class="panel">
+     <h2 id="market-title">🏪 Market Opportunities</h2>
+     <div id="market-businesses"></div>
+    </div>
+    <div class="panel side-panel">
+     <h2>👥 Local NPCs &amp; Companies</h2>
+     <div id="npc-companies"></div>
+    </div>
+   </div>
+   <div class="content-grid">
+    <div class="panel">
+     <h2>🏆 Your Empire</h2>
+     <div id="owned-businesses"></div>
+    </div>
+    <div class="panel">
+     <h2>📊 Your Investments</h2>
+     <div id="investments"></div>
+    </div>
+    <div class="panel side-panel">
+     <h2>🎯 Achievements</h2>
+     <div id="achievements"></div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      game_title: "Global Business Empire",
+      company_name: "Global Dynamics Corp",
+      background_color: "#2d3748",
+      surface_color: "#ffffff",
+      text_color: "#1a202c",
+      primary_action_color: "#4299e1",
+      secondary_action_color: "#48bb78"
+    };
+
+    const CITIES = [
+      { id: 'newyork', name: '🗽 New York', multiplier: 1.5, description: 'Financial hub with high costs but great returns' },
+      { id: 'london', name: '🇬🇧 London', multiplier: 1.3, description: 'Historic business center with stable markets' },
+      { id: 'tokyo', name: '🗾 Tokyo', multiplier: 1.4, description: 'Tech innovation capital with cutting-edge opportunities' },
+      { id: 'singapore', name: '🇸🇬 Singapore', multiplier: 1.2, description: 'Strategic trading hub with low taxes' },
+      { id: 'dubai', name: '🏜️ Dubai', multiplier: 1.6, description: 'Luxury market with high-risk, high-reward ventures' }
+    ];
+
+    const BUSINESS_TEMPLATES = [
+      { id: 'cafe', name: '☕ Coffee Shop', baseCost: 500, baseRevenue: 3, multiplier: 1.15, category: 'food' },
+      { id: 'restaurant', name: '🍕 Restaurant', baseCost: 2000, baseRevenue: 15, multiplier: 1.15, category: 'food' },
+      { id: 'retail', name: '🏪 Retail Store', baseCost: 5000, baseRevenue: 35, multiplier: 1.15, category: 'retail' },
+      { id: 'tech', name: '💻 Tech Startup', baseCost: 25000, baseRevenue: 150, multiplier: 1.15, category: 'tech' },
+      { id: 'factory', name: '🏭 Manufacturing', baseCost: 100000, baseRevenue: 600, multiplier: 1.15, category: 'industrial' },
+      { id: 'bank', name: '🏦 Financial Services', baseCost: 500000, baseRevenue: 3000, multiplier: 1.15, category: 'finance' },
+      { id: 'realestate', name: '🏠 Real Estate', baseCost: 1000000, baseRevenue: 5000, multiplier: 1.15, category: 'property' },
+      { id: 'airline', name: '✈️ Airline', baseCost: 5000000, baseRevenue: 25000, multiplier: 1.15, category: 'transport' }
+    ];
+
+    const NPC_NAMES = [
+      'Alexandra Chen', 'Marcus Johnson', 'Sofia Rodriguez', 'Raj Patel', 'Emma Thompson',
+      'Dmitri Volkov', 'Yuki Tanaka', 'Isabella Santos', 'Ahmed Al-Rashid', 'Priya Sharma',
+      'Jean-Luc Dubois', 'Olga Petrov', 'Carlos Mendez', 'Fatima Hassan', 'Lars Nielsen'
+    ];
+
+    const PERSONALITIES = [
+      'Aggressive', 'Conservative', 'Innovative', 'Collaborative', 'Competitive',
+      'Visionary', 'Pragmatic', 'Risk-taker', 'Analytical', 'Charismatic'
+    ];
+
+    const RANDOM_EVENTS = [
+      {
+        title: '📰 Market Crash Warning',
+        description: 'Economic analysts predict a potential market downturn. How do you respond?',
+        choices: [
+          { text: 'Sell 50% of investments', effect: 'Lose 20% investment value, gain cash', impact: { cash: 0.8, investments: -0.2 } },
+          { text: 'Buy more at low prices', effect: 'Risk cash for potential gains', impact: { cash: -0.3, investments: 0.4 } },
+          { text: 'Hold steady', effect: 'No immediate change', impact: { cash: 0, investments: 0 } }
+        ]
+      },
+      {
+        title: '🚀 Tech Boom',
+        description: 'A new technology is revolutionizing the market! Tech businesses are booming.',
+        choices: [
+          { text: 'Invest heavily in tech', effect: 'Boost tech business revenue by 50%', impact: { cash: -0.2, techBoost: 1.5 } },
+          { text: 'Partner with tech companies', effect: 'Form partnerships with tech NPCs', impact: { partnerships: 2 } },
+          { text: 'Stay focused on current business', effect: 'No change but miss opportunity', impact: {} }
+        ]
+      },
+      {
+        title: '🏛️ Government Regulation',
+        description: 'New regulations are being introduced that will affect certain industries.',
+        choices: [
+          { text: 'Lobby against regulations', effect: 'Spend money to reduce impact', impact: { cash: -0.15, regulationImmunity: true } },
+          { text: 'Adapt business model', effect: 'Reduce revenue but stay compliant', impact: { revenue: -0.1 } },
+          { text: 'Ignore and hope for the best', effect: 'Risk penalties but no immediate cost', impact: { risk: 0.3 } }
+        ]
+      },
+      {
+        title: '🌟 Celebrity Endorsement',
+        description: 'A famous celebrity wants to endorse one of your businesses!',
+        choices: [
+          { text: 'Pay for endorsement deal', effect: 'Boost business revenue significantly', impact: { cash: -0.1, revenueBoost: 1.3 } },
+          { text: 'Negotiate partnership', effect: 'Share profits but lower cost', impact: { cash: -0.05, revenueBoost: 1.15 } },
+          { text: 'Decline the offer', effect: 'No cost, no benefit', impact: {} }
+        ]
+      },
+      {
+        title: '🤝 Merger Opportunity',
+        description: 'A competitor wants to merge with one of your businesses.',
+        choices: [
+          { text: 'Accept merger', effect: 'Combine resources, share control', impact: { businessMerger: true, revenue: 1.4 } },
+          { text: 'Counter-offer to buy them', effect: 'Expensive but full control', impact: { cash: -0.3, revenue: 1.6 } },
+          { text: 'Reject the offer', effect: 'Maintain independence', impact: {} }
+        ]
+      }
+    ];
+
+    let gameState = {
+      cash: 10000,
+      startTime: Date.now(),
+      lastTick: Date.now(),
+      currentCity: 'newyork',
+      entities: [],
+      npcs: [],
+      achievements: [],
+      lastEventTime: Date.now()
+    };
+
+    const dataHandler = {
+      onDataChanged(data) {
+        gameState.entities = data;
+        renderAll();
+        updateStats();
+        checkAchievements();
+      }
+    };
+
+    async function init() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        showToast('Failed to initialize game data');
+        return;
+      }
+
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          document.getElementById('game-title').textContent = config.game_title || defaultConfig.game_title;
+          document.getElementById('company-name').textContent = config.company_name || defaultConfig.company_name;
+          
+          const customFont = config.font_family || defaultConfig.font_family;
+          if (customFont) {
+            document.body.style.fontFamily = `${customFont}, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+          }
+
+          const fontSize = config.font_size || 16;
+          document.querySelector('.header h1').style.fontSize = `${fontSize * 2}px`;
+          document.querySelector('.company-name').style.fontSize = `${fontSize * 1.125}px`;
+          document.querySelectorAll('.panel h2').forEach(el => el.style.fontSize = `${fontSize * 1.25}px`);
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: {
+            get: () => config.font_size || 16,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["game_title", config.game_title || defaultConfig.game_title],
+          ["company_name", config.company_name || defaultConfig.company_name]
+        ])
+      });
+
+      initializeWorld();
+      renderCityTabs();
+      startGameLoop();
+    }
+
+    function initializeWorld() {
+      // Create NPCs and their businesses in each city
+      CITIES.forEach(city => {
+        for (let i = 0; i < 3; i++) {
+          createNPC(city.id);
+        }
+      });
+    }
+
+    function createNPC(cityId) {
+      const npc = {
+        id: `npc_${Date.now()}_${Math.random()}`,
+        name: NPC_NAMES[Math.floor(Math.random() * NPC_NAMES.length)],
+        personality: PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)],
+        city: cityId,
+        wealth: Math.floor(Math.random() * 50000) + 10000,
+        businesses: [],
+        relationshipWithPlayer: Math.floor(Math.random() * 50) + 25 // 25-75
+      };
+      
+      gameState.npcs.push(npc);
+      
+      // Create 1-2 businesses for this NPC
+      const businessCount = Math.floor(Math.random() * 2) + 1;
+      for (let i = 0; i < businessCount; i++) {
+        createNPCBusiness(npc);
+      }
+      
+      return npc;
+    }
+
+    async function createNPCBusiness(npc) {
+      const template = BUSINESS_TEMPLATES[Math.floor(Math.random() * BUSINESS_TEMPLATES.length)];
+      const city = CITIES.find(c => c.id === npc.city);
+      
+      const business = {
+        id: `${template.id}_${npc.id}_${Date.now()}`,
+        entity_type: 'business',
+        name: `${npc.name}'s ${template.name}`,
+        city: npc.city,
+        owner_type: 'npc',
+        owner_id: npc.id,
+        business_type: template.id,
+        level: Math.floor(Math.random() * 3) + 1,
+        revenue_per_tick: Math.floor(template.baseRevenue * city.multiplier * (Math.random() * 0.5 + 0.75)),
+        cost: Math.floor(template.baseCost * city.multiplier),
+        upgrade_cost: 0,
+        market_value: Math.floor(template.baseCost * city.multiplier * (Math.random() * 0.5 + 1.2)),
+        shares_owned: 0,
+        total_shares: 100,
+        partnership_type: '',
+        partnership_terms: '',
+        created_at: new Date().toISOString(),
+        last_updated: new Date().toISOString(),
+        status: 'active',
+        data: JSON.stringify({ npc_name: npc.name, npc_personality: npc.personality })
+      };
+
+      if (gameState.entities.length < 999) {
+        const result = await window.dataSdk.create(business);
+        if (result.isOk) {
+          npc.businesses.push(business.id);
+        }
+      }
+    }
+
+    function renderCityTabs() {
+      const container = document.getElementById('city-tabs');
+      container.innerHTML = '';
+      
+      CITIES.forEach(city => {
+        const tab = document.createElement('div');
+        tab.className = `city-tab ${city.id === gameState.currentCity ? 'active' : ''}`;
+        tab.textContent = city.name;
+        tab.onclick = () => switchCity(city.id);
+        container.appendChild(tab);
+      });
+    }
+
+    function switchCity(cityId) {
+      gameState.currentCity = cityId;
+      renderCityTabs();
+      renderAll();
+      
+      const city = CITIES.find(c => c.id === cityId);
+      showToast(`Welcome to ${city.name}! ${city.description}`);
+    }
+
+    function renderAll() {
+      renderAvailableBusinesses();
+      renderMarketBusinesses();
+      renderOwnedBusinesses();
+      renderInvestments();
+      renderNPCCompanies();
+    }
+
+    function renderAvailableBusinesses() {
+      const container = document.getElementById('available-businesses');
+      const city = CITIES.find(c => c.id === gameState.currentCity);
+      
+      container.innerHTML = '';
+      
+      BUSINESS_TEMPLATES.forEach(template => {
+        const ownedCount = gameState.entities.filter(e => 
+          e.entity_type === 'business' && 
+          e.business_type === template.id && 
+          e.city === gameState.currentCity &&
+          e.owner_type === 'player'
+        ).length;
+        
+        const cost = Math.floor(template.baseCost * city.multiplier * Math.pow(template.multiplier, ownedCount));
+        const revenue = Math.floor(template.baseRevenue * city.multiplier * Math.pow(template.multiplier, ownedCount));
+
+        const div = document.createElement('div');
+        div.className = 'business-item';
+        div.innerHTML = `
+          <div class="business-header">
+            <div class="business-name">${template.name}</div>
+            <div class="business-level">Owned: ${ownedCount}</div>
+          </div>
+          <div class="business-info">
+            💵 Cost: $${formatNumber(cost)} | 📊 Revenue: $${formatNumber(revenue)}/sec<br>
+            🌍 City Multiplier: ${city.multiplier}x
+          </div>
+          <div class="business-actions">
+            <button class="btn btn-primary" onclick="purchaseBusiness('${template.id}')" 
+              ${gameState.cash < cost ? 'disabled' : ''}>
+              Purchase
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderMarketBusinesses() {
+      const container = document.getElementById('market-businesses');
+      const npcBusinesses = gameState.entities.filter(e => 
+        e.entity_type === 'business' && 
+        e.owner_type === 'npc' && 
+        e.city === gameState.currentCity
+      );
+
+      if (npcBusinesses.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🏪</div>
+            <div>No businesses available for investment in this city.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      npcBusinesses.forEach(business => {
+        const npcData = JSON.parse(business.data || '{}');
+        const availableShares = business.total_shares - business.shares_owned;
+        const sharePrice = Math.floor(business.market_value / business.total_shares);
+
+        const div = document.createElement('div');
+        div.className = 'business-item';
+        div.innerHTML = `
+          <div class="owner-indicator npc-owned">NPC Owned</div>
+          <div class="business-header">
+            <div class="business-name">${business.name}</div>
+            <div class="business-level">Lv.${business.level}</div>
+          </div>
+          <div class="business-info">
+            👤 Owner: ${npcData.npc_name} (${npcData.npc_personality})<br>
+            📊 Revenue: $${formatNumber(business.revenue_per_tick)}/sec<br>
+            💰 Market Value: $${formatNumber(business.market_value)}<br>
+            📈 Available Shares: ${availableShares}% @ $${formatNumber(sharePrice)}/share
+          </div>
+          <div class="business-actions">
+            <button class="btn btn-warning" onclick="investInBusiness('${business.id}', 10)" 
+              ${gameState.cash < sharePrice * 10 || availableShares < 10 ? 'disabled' : ''}>
+              Buy 10% ($${formatNumber(sharePrice * 10)})
+            </button>
+            <button class="btn btn-success" onclick="proposePartnership('${business.id}')" 
+              ${business.partnership_type ? 'disabled' : ''}>
+              Partnership
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderOwnedBusinesses() {
+      const container = document.getElementById('owned-businesses');
+      const ownedBusinesses = gameState.entities.filter(e => 
+        e.entity_type === 'business' && 
+        e.owner_type === 'player' && 
+        e.city === gameState.currentCity
+      );
+
+      if (ownedBusinesses.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🏢</div>
+            <div>No businesses owned in this city yet.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      ownedBusinesses.forEach(business => {
+        const div = document.createElement('div');
+        div.className = 'business-item';
+        div.innerHTML = `
+          <div class="owner-indicator">Your Business</div>
+          <div class="business-header">
+            <div class="business-name">${business.name}</div>
+            <div class="business-level">Level ${business.level}</div>
+          </div>
+          <div class="business-info">
+            📊 Revenue: $${formatNumber(business.revenue_per_tick)}/sec<br>
+            ⬆️ Upgrade: $${formatNumber(business.upgrade_cost)}<br>
+            💰 Market Value: $${formatNumber(business.market_value)}
+          </div>
+          ${business.partnership_type ? `
+            <div class="partnership-info">
+              🤝 Partnership: ${business.partnership_type}<br>
+              Terms: ${business.partnership_terms}
+            </div>
+          ` : ''}
+          <div class="business-actions">
+            <button class="btn btn-success" onclick="upgradeBusiness('${business.id}')"
+              ${gameState.cash < business.upgrade_cost ? 'disabled' : ''}>
+              Upgrade
+            </button>
+            <button class="btn btn-danger" onclick="sellBusiness('${business.id}')">
+              Sell
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderInvestments() {
+      const container = document.getElementById('investments');
+      const investments = gameState.entities.filter(e => 
+        e.entity_type === 'business' && 
+        e.owner_type === 'npc' && 
+        e.shares_owned > 0
+      );
+
+      if (investments.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div>No investments yet. Visit the market to invest!</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      investments.forEach(business => {
+        const npcData = JSON.parse(business.data || '{}');
+        const dividendPerShare = business.revenue_per_tick / business.total_shares;
+        const yourDividend = dividendPerShare * business.shares_owned;
+
+        const div = document.createElement('div');
+        div.className = 'business-item';
+        div.innerHTML = `
+          <div class="owner-indicator partnership">Investment</div>
+          <div class="business-header">
+            <div class="business-name">${business.name}</div>
+            <div class="business-level">${business.shares_owned}% owned</div>
+          </div>
+          <div class="business-info">
+            🏙️ City: ${CITIES.find(c => c.id === business.city)?.name}<br>
+            👤 Owner: ${npcData.npc_name}<br>
+            💰 Your Dividend: $${formatNumber(yourDividend)}/sec<br>
+            📈 Share Value: $${formatNumber(business.market_value / business.total_shares)}
+          </div>
+          <div class="business-actions">
+            <button class="btn btn-warning" onclick="sellShares('${business.id}', ${Math.min(business.shares_owned, 10)})">
+              Sell 10%
+            </button>
+            <button class="btn btn-primary" onclick="buyMoreShares('${business.id}', 5)"
+              ${gameState.cash < (business.market_value / business.total_shares) * 5 ? 'disabled' : ''}>
+              Buy 5% More
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderNPCCompanies() {
+      const container = document.getElementById('npc-companies');
+      const localNPCs = gameState.npcs.filter(npc => npc.city === gameState.currentCity);
+
+      if (localNPCs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <div>No NPCs in this city.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      localNPCs.forEach(npc => {
+        const npcBusinesses = gameState.entities.filter(e => e.owner_id === npc.id);
+        
+        const div = document.createElement('div');
+        div.className = 'npc-card';
+        div.innerHTML = `
+          <div class="npc-name">👤 ${npc.name}</div>
+          <div class="npc-details">
+            <strong>Personality:</strong> ${npc.personality}<br>
+            <strong>Wealth:</strong> $${formatNumber(npc.wealth)}<br>
+            <strong>Businesses:</strong> ${npcBusinesses.length}<br>
+            <strong>Relationship:</strong> ${npc.relationshipWithPlayer}%
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function purchaseBusiness(templateId) {
+      const template = BUSINESS_TEMPLATES.find(t => t.id === templateId);
+      const city = CITIES.find(c => c.id === gameState.currentCity);
+      const ownedCount = gameState.entities.filter(e => 
+        e.entity_type === 'business' && 
+        e.business_type === templateId && 
+        e.city === gameState.currentCity &&
+        e.owner_type === 'player'
+      ).length;
+      
+      const cost = Math.floor(template.baseCost * city.multiplier * Math.pow(template.multiplier, ownedCount));
+
+      if (gameState.cash < cost) {
+        showToast('Not enough cash!');
+        return;
+      }
+
+      if (gameState.entities.length >= 999) {
+        showToast('Maximum limit reached!');
+        return;
+      }
+
+      gameState.cash -= cost;
+
+      const business = {
+        id: `${templateId}_${gameState.currentCity}_${Date.now()}`,
+        entity_type: 'business',
+        name: template.name,
+        city: gameState.currentCity,
+        owner_type: 'player',
+        owner_id: 'player',
+        business_type: templateId,
+        level: 1,
+        revenue_per_tick: Math.floor(template.baseRevenue * city.multiplier),
+        cost: cost,
+        upgrade_cost: Math.floor(cost * 1.5),
+        market_value: Math.floor(cost * 1.2),
+        shares_owned: 0,
+        total_shares: 100,
+        partnership_type: '',
+        partnership_terms: '',
+        created_at: new Date().toISOString(),
+        last_updated: new Date().toISOString(),
+        status: 'active',
+        data: JSON.stringify({ city_multiplier: city.multiplier })
+      };
+
+      const result = await window.dataSdk.create(business);
+      if (result.isOk) {
+        showToast(`Purchased ${template.name} in ${city.name}!`);
+        updateStats();
+      } else {
+        gameState.cash += cost;
+        showToast('Failed to purchase business');
+      }
+    }
+
+    async function investInBusiness(businessId, sharePercent) {
+      const business = gameState.entities.find(e => e.id === businessId);
+      if (!business) return;
+
+      const sharePrice = Math.floor(business.market_value / business.total_shares);
+      const totalCost = sharePrice * sharePercent;
+
+      if (gameState.cash < totalCost) {
+        showToast('Not enough cash for investment!');
+        return;
+      }
+
+      if (business.shares_owned + sharePercent > business.total_shares) {
+        showToast('Not enough shares available!');
+        return;
+      }
+
+      gameState.cash -= totalCost;
+      business.shares_owned += sharePercent;
+      business.last_updated = new Date().toISOString();
+
+      const result = await window.dataSdk.update(business);
+      if (result.isOk) {
+        showToast(`Invested ${sharePercent}% in ${business.name}!`);
+        updateStats();
+      } else {
+        gameState.cash += totalCost;
+        business.shares_owned -= sharePercent;
+        showToast('Investment failed');
+      }
+    }
+
+    async function proposePartnership(businessId) {
+      const business = gameState.entities.find(e => e.id === businessId);
+      if (!business) return;
+
+      const npcData = JSON.parse(business.data || '{}');
+      const npc = gameState.npcs.find(n => n.name === npcData.npc_name);
+      
+      if (!npc) return;
+
+      // Partnership success based on relationship and random chance
+      const successChance = (npc.relationshipWithPlayer / 100) * 0.7 + 0.3;
+      
+      if (Math.random() < successChance) {
+        business.partnership_type = 'Revenue Share';
+        business.partnership_terms = '30% of revenue shared with partner';
+        business.last_updated = new Date().toISOString();
+
+        const result = await window.dataSdk.update(business);
+        if (result.isOk) {
+          showToast(`Partnership formed with ${npcData.npc_name}!`);
+          npc.relationshipWithPlayer = Math.min(100, npc.relationshipWithPlayer + 10);
+          updateStats();
+        }
+      } else {
+        showToast(`${npcData.npc_name} declined the partnership offer.`);
+        npc.relationshipWithPlayer = Math.max(0, npc.relationshipWithPlayer - 5);
+      }
+    }
+
+    async function upgradeBusiness(businessId) {
+      const business = gameState.entities.find(e => e.id === businessId);
+      if (!business || gameState.cash < business.upgrade_cost) {
+        showToast('Not enough cash!');
+        return;
+      }
+
+      gameState.cash -= business.upgrade_cost;
+      business.level += 1;
+      business.revenue_per_tick = Math.floor(business.revenue_per_tick * 1.5);
+      business.upgrade_cost = Math.floor(business.upgrade_cost * 1.5);
+      business.market_value = Math.floor(business.market_value * 1.3);
+      business.last_updated = new Date().toISOString();
+
+      const result = await window.dataSdk.update(business);
+      if (result.isOk) {
+        showToast(`Upgraded ${business.name} to level ${business.level}!`);
+        updateStats();
+      } else {
+        gameState.cash += business.upgrade_cost;
+        showToast('Upgrade failed');
+      }
+    }
+
+    async function sellBusiness(businessId) {
+      const business = gameState.entities.find(e => e.id === businessId);
+      if (!business) return;
+
+      const sellPrice = Math.floor(business.market_value * 0.8);
+      gameState.cash += sellPrice;
+
+      const result = await window.dataSdk.delete(business);
+      if (result.isOk) {
+        showToast(`Sold ${business.name} for $${formatNumber(sellPrice)}`);
+        updateStats();
+      } else {
+        gameState.cash -= sellPrice;
+        showToast('Sale failed');
+      }
+    }
+
+    function startGameLoop() {
+      setInterval(() => {
+        const now = Date.now();
+        const deltaTime = (now - gameState.lastTick) / 1000;
+        gameState.lastTick = now;
+
+        let totalIncome = 0;
+        
+        // Income from owned businesses
+        gameState.entities.forEach(entity => {
+          if (entity.entity_type === 'business') {
+            if (entity.owner_type === 'player') {
+              totalIncome += entity.revenue_per_tick;
+            } else if (entity.owner_type === 'npc' && entity.shares_owned > 0) {
+              // Dividend from investments
+              const dividendPerShare = entity.revenue_per_tick / entity.total_shares;
+              totalIncome += dividendPerShare * entity.shares_owned;
+            }
+            
+            // Partnership income
+            if (entity.partnership_type === 'Revenue Share' && entity.owner_type === 'npc') {
+              totalIncome += entity.revenue_per_tick * 0.3;
+            }
+          }
+        });
+
+        gameState.cash += totalIncome * deltaTime;
+        updateStats();
+      }, 100);
+
+      // Random events
+      setInterval(() => {
+        if (Date.now() - gameState.lastEventTime > 60000 && Math.random() < 0.1) { // 10% chance every minute
+          triggerRandomEvent();
+        }
+      }, 10000);
+
+      setInterval(() => {
+        updateTimePlayed();
+      }, 1000);
+    }
+
+    function triggerRandomEvent() {
+      const event = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+      gameState.lastEventTime = Date.now();
+      
+      showEventModal(event);
+    }
+
+    function showEventModal(event) {
+      const modal = document.createElement('div');
+      modal.className = 'event-modal';
+      modal.innerHTML = `
+        <div class="event-content">
+          <div class="event-title">${event.title}</div>
+          <div class="event-description">${event.description}</div>
+          <div class="event-choices">
+            ${event.choices.map((choice, index) => `
+              <button class="choice-btn" onclick="handleEventChoice(${index}, '${event.title}')">
+                <div class="choice-title">${choice.text}</div>
+                <div class="choice-effect">${choice.effect}</div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Store event data for choice handling
+      window.currentEvent = event;
+    }
+
+    function handleEventChoice(choiceIndex, eventTitle) {
+      const event = window.currentEvent;
+      const choice = event.choices[choiceIndex];
+      
+      // Apply choice effects
+      if (choice.impact.cash) {
+        gameState.cash *= (1 + choice.impact.cash);
+      }
+      
+      if (choice.impact.investments) {
+        gameState.entities.forEach(entity => {
+          if (entity.entity_type === 'business' && entity.shares_owned > 0) {
+            entity.market_value *= (1 + choice.impact.investments);
+          }
+        });
+      }
+      
+      if (choice.impact.techBoost) {
+        gameState.entities.forEach(entity => {
+          if (entity.entity_type === 'business' && entity.business_type === 'tech') {
+            entity.revenue_per_tick *= choice.impact.techBoost;
+          }
+        });
+      }
+      
+      showToast(`Event resolved: ${choice.text}`);
+      
+      // Remove modal
+      document.querySelector('.event-modal').remove();
+      delete window.currentEvent;
+      
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('cash').textContent = `$${formatNumber(Math.floor(gameState.cash))}`;
+      
+      let totalIncome = 0;
+      let myBusinessCount = 0;
+      let investmentCount = 0;
+      let partnershipCount = 0;
+      
+      gameState.entities.forEach(entity => {
+        if (entity.entity_type === 'business') {
+          if (entity.owner_type === 'player') {
+            totalIncome += entity.revenue_per_tick;
+            myBusinessCount++;
+            if (entity.partnership_type) partnershipCount++;
+          } else if (entity.owner_type === 'npc' && entity.shares_owned > 0) {
+            const dividendPerShare = entity.revenue_per_tick / entity.total_shares;
+            totalIncome += dividendPerShare * entity.shares_owned;
+            investmentCount++;
+          }
+          
+          if (entity.partnership_type === 'Revenue Share' && entity.owner_type === 'npc') {
+            totalIncome += entity.revenue_per_tick * 0.3;
+          }
+        }
+      });
+      
+      document.getElementById('income').textContent = `$${formatNumber(Math.floor(totalIncome))}`;
+      document.getElementById('my-business-count').textContent = myBusinessCount;
+      document.getElementById('investment-count').textContent = investmentCount;
+      document.getElementById('partnership-count').textContent = partnershipCount;
+    }
+
+    function updateTimePlayed() {
+      const elapsed = Math.floor((Date.now() - gameState.startTime) / 60000);
+      document.getElementById('time-played').textContent = `${elapsed}m`;
+    }
+
+    function checkAchievements() {
+      const newAchievements = [];
+
+      const myBusinesses = gameState.entities.filter(e => e.entity_type === 'business' && e.owner_type === 'player');
+      const investments = gameState.entities.filter(e => e.entity_type === 'business' && e.shares_owned > 0);
+      const partnerships = gameState.entities.filter(e => e.entity_type === 'business' && e.partnership_type);
+
+      if (myBusinesses.length >= 1 && !gameState.achievements.includes('first_business')) {
+        gameState.achievements.push('first_business');
+        newAchievements.push('🎉 First Business Empire!');
+      }
+
+      if (investments.length >= 1 && !gameState.achievements.includes('first_investment')) {
+        gameState.achievements.push('first_investment');
+        newAchievements.push('📊 Smart Investor!');
+      }
+
+      if (partnerships.length >= 1 && !gameState.achievements.includes('first_partnership')) {
+        gameState.achievements.push('first_partnership');
+        newAchievements.push('🤝 Partnership Pro!');
+      }
+
+      const citiesWithBusinesses = new Set(myBusinesses.map(b => b.city));
+      if (citiesWithBusinesses.size >= 3 && !gameState.achievements.includes('global_presence')) {
+        gameState.achievements.push('global_presence');
+        newAchievements.push('🌍 Global Empire!');
+      }
+
+      if (gameState.cash >= 1000000 && !gameState.achievements.includes('millionaire')) {
+        gameState.achievements.push('millionaire');
+        newAchievements.push('💎 Millionaire Tycoon!');
+      }
+
+      if (newAchievements.length > 0) {
+        const container = document.getElementById('achievements');
+        newAchievements.forEach(achievement => {
+          const div = document.createElement('div');
+          div.className = 'achievement';
+          div.textContent = achievement;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+      if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+      return num.toFixed(0);
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99b55f51e663ba08',t:'MTc2MjYwODA3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
