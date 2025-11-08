@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Business Empire</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="mobile-container">
+   <div class="top-bar">
+    <div class="game-title" id="game-title">
+     Mobile Business Empire
+    </div>
+    <div class="company-name" id="company-name">
+     Global Dynamics Corp
+    </div>
+    <div class="stats-row">
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       💰 Cash
+      </div>
+      <div class="stat-mini-value" id="cash">
+       $25K
+      </div>
+     </div>
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       📈 Income
+      </div>
+      <div class="stat-mini-value" id="income">
+       $0/s
+      </div>
+     </div>
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       🏆 Level
+      </div>
+      <div class="stat-mini-value" id="player-level">
+       1
+      </div>
+     </div>
+    </div>
+    <div class="stats-row">
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       🏢 Businesses
+      </div>
+      <div class="stat-mini-value" id="business-count">
+       0
+      </div>
+     </div>
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       📊 Investments
+      </div>
+      <div class="stat-mini-value" id="investment-count">
+       0
+      </div>
+     </div>
+     <div class="stat-mini">
+      <div class="stat-mini-label">
+       🤝 Partners
+      </div>
+      <div class="stat-mini-value" id="partnership-count">
+       0
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="city-selector">
+    <div class="city-grid" id="city-grid"></div>
+   </div>
+   <div class="content-area" id="content-area"><!-- Dynamic content based on selected tab -->
+   </div><button class="floating-btn" onclick="showQuickActions()" id="quick-btn">⚡</button>
+   <div class="bottom-nav">
+    <div class="nav-grid"><button class="nav-btn active" onclick="switchTab('businesses')" id="nav-businesses"> <span class="nav-icon">🏢</span> <span>Business</span> </button> <button class="nav-btn" onclick="switchTab('investments')" id="nav-investments"> <span class="nav-icon">📊</span> <span>Invest</span> </button> <button class="nav-btn" onclick="switchTab('market')" id="nav-market"> <span class="nav-icon">🏪</span> <span>Market</span> </button> <button class="nav-btn" onclick="switchTab('portfolio')" id="nav-portfolio"> <span class="nav-icon">💼</span> <span>Portfolio</span> </button> <button class="nav-btn" onclick="switchTab('achievements')" id="nav-achievements"> <span class="nav-icon">🏆</span> <span>Goals</span> </button>
+    </div>
+   </div>
+  </div>
+ </body>
+</html>
